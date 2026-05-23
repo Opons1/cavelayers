@@ -253,6 +253,9 @@ core.register_on_generated(function(minp, maxp, seed)
     for z = minp.z, maxp.z do
         for y = maxp.y, minp.y, -1 do
             local layer = findcavelayer(y)
+            if y > 0 then
+                break
+            end
             for x = minp.x, maxp.x do
                 if layers[layer] then
                     layers[layer](data, area, x, y, z)
