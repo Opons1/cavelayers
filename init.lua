@@ -14,12 +14,13 @@ local c_air = core.get_content_id("air")
 local c_permafrost = core.get_content_id("default:permafrost")
 local c_permafrost_with_moss = core.get_content_id("default:permafrost_with_moss")
 local c_deepstone = core.get_content_id("cavelayers:deepstone")
-local stones = {c_stone, c_mossy_cobble, c_cobble}
-local seed = 99
-local PsuedoRandom = PseudoRandom(seed)
 local c_slab_mossycobble = core.get_content_id("stairs:slab_mossycobble")
 local c_slab_cobble = core.get_content_id("stairs:slab_cobble")
+local c_mossy_stone = core.get_content_id("cavelayers:mossy_stone")
 
+local seed = 99
+local PsuedoRandom = PseudoRandom(seed)
+local stones = {c_stone, c_mossy_cobble, c_cobble, c_mossy_stone}
 local function randomstone()
     return stones[PsuedoRandom:next(1, #stones)]
 end
@@ -28,8 +29,6 @@ local nodestoreplacewithstone = {
     [c_dirt] = true,
     [c_stone] = true,
     [c_silver_sand] = true,
-    [c_sand] = true,
-    [c_gravel] = true,
 }
 core.register_on_generated(function(minp, maxp, seed)
 
