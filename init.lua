@@ -35,6 +35,15 @@ local c_deepstone_pillar_1 = core.get_content_id("cavelayers:deepstone_pillar_1"
 local c_mossy_stone_pillar_1 = core.get_content_id("cavelayers:mossy_stone_pillar_1")
 local c_cobble_pillar_1 = core.get_content_id("cavelayers:cobble_pillar_1")
 local c_mossy_cobble_pillar_1 = core.get_content_id("cavelayers:mossy_cobble_pillar_1")
+--layer 2
+local c_lush_moss = core.get_content_id("cavelayers:lush_moss")
+local c_lush_moss_carpet = core.get_content_id("cavelayers:lush_moss_carpet")
+local c_lush_vine = core.get_content_id("cavelayers:lush_vine")
+local c_lush_vine_large = core.get_content_id("cavelayers:lush_vine_large")
+local c_glowing_vine = core.get_content_id("cavelayers:glowing_vine")
+local c_water_flowing = core.get_content_id("default:water_flowing")
+local c_clay = core.get_content_id("default:clay")
+local c_heavy_moss = core.get_content_id("cavelayers:heavy_moss")
 --random number generator
 local seed = 99
 local pr = PseudoRandom(seed)
@@ -45,9 +54,6 @@ local floorstones = {c_slab_mossycobble, c_slab_cobble, c_mossy_stone, c_mossy_c
 --stalactites for layer 1
 local stalactites1 = {c_stone_pillar_1, c_mossy_stone_pillar_1, c_cobble_pillar_1, c_mossy_cobble_pillar_1,
 }
-
-
-
 --function to get a random node from a list of nodes
 local function randomstone(stones)
     return stones[pr:next(1, #stones)]
@@ -148,6 +154,66 @@ local function progress_stalactite(vi, data, vi1up, vi1down)
     end
 end
 
+local mossiercavesvines = {
+    [c_lush_vine] = true,
+    [c_lush_vine_large] = true,
+    [c_glowing_vine] = true,
+}
+local mossycavesbasicallyair = {
+    [c_air] = true,
+    [c_water] = true,
+    [c_water_flowing] = true,
+}
+local mossiercavesfloor = {c_heavy_moss}
+local mossiercavesreplaceair = function(c_1up, c_1down)
+    if c_1up == c_lush_moss and c_1down == c_air then
+        local num = pr:next(1, 21)
+        if num == 1 then
+            return c_glowing_vine
+        elseif num <= 4 then
+            return c_lush_vine_large
+        elseif num <=6 then
+            return c_lush_vine
+        else 
+            return c_air
+        end
+    end
+    if mossiercavesvines[c_1up] and mossycavesbasicallyair[c_1down] then
+        local num = pr:next(1, 10)
+        if num > 1 then
+            return c_1up
+        end
+    end
+    return c_air
+end
+
+local mossiercavesreplace = {
+    [c_stone] = function(c_1up, c_1down)
+        if mossycavesbasicallyair[c_1up] then
+            return randomstone(mossiercavesfloor)
+        elseif mossycavesbasicallyair[c_1down] then
+            return c_lush_moss
+        else 
+            return randomstone(stones)
+        end
+    end,
+    [c_air] = function(c_1up, c_1down)
+        return mossiercavesreplaceair(c_1up, c_1down)
+    end,
+    [c_water] = function(c_1up, c_1down)
+        return mossiercavesreplaceair(c_1up, c_1down)
+    end,
+    [c_water_flowing] = function(c_1up, c_1down)
+        return mossiercavesreplaceair(c_1up, c_1down)
+    end,
+    [c_silver_sand] = function(c_1up, c_1down)
+        return c_clay
+    end,
+    [c_gravel] = function(c_1up, c_1down)
+        return c_clay
+    end,
+    
+}
 local layers = {
     --mossy caves
     [1] = function(data, area, x, y, z)
@@ -163,7 +229,12 @@ local layers = {
     end,
     --mossier caves
     [2] = function(data, area, x, y, z)
-
+        local vi = area:index(x, y, z)
+        local vi1up = area:index(x, y + 1, z)
+        local vi1down = area:index(x, y - 1, z)
+        local c_1up = data[vi1up]
+        local c_1down = data[vi1down]
+        data[vi] = mossiercavesreplace[data[vi]] and mossiercavesreplace[data[vi]](c_1up, c_1down) or data[vi]
     end,
 }
 core.register_on_generated(function(minp, maxp, seed)
@@ -189,7 +260,7 @@ core.register_on_generated(function(minp, maxp, seed)
             end
         end
     end
-
     vm:set_data(data)
+    vm:calc_lighting()
     vm:write_to_map()
 end)
