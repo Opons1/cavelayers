@@ -1,6 +1,7 @@
 cavelayers = {}
 dofile(minetest.get_modpath("cavelayers") .. "./stones.lua")
-
+local c_sand = core.get_content_id("default:sand")
+local c_gravel = core.get_content_id("default:gravel")
 local c_dirt = core.get_content_id("default:dirt")
 local c_water = core.get_content_id("default:water_source")
 local c_silver_sand = core.get_content_id("default:silver_sand")
@@ -27,6 +28,8 @@ local nodestoreplacewithstone = {
     [c_dirt] = true,
     [c_stone] = true,
     [c_silver_sand] = true,
+    [c_sand] = true,
+    [c_gravel] = true,
 }
 core.register_on_generated(function(minp, maxp, seed)
 
@@ -62,12 +65,15 @@ core.register_on_generated(function(minp, maxp, seed)
                             local chance = PsuedoRandom:next(1, 7)
                             if chance == 1 then
                                 local length = PsuedoRandom:next(1, 5)
+                                data[vi] = randomstone()
                                 for i = 1, length do
                                     local vidown = area:index(x, y - i, z)
                                     if data[vidown] == c_air then
                                         data[vidown] = randomstone()
                                     end
                                 end
+                            else 
+                                data[vi] = c_air
                             end
                         end
                         data[vi] = randomstone()
