@@ -25,6 +25,3 @@ local function register_stone(name, cracky)
 end
 register_stone("arcane_stone", 3)
 register_stone("deepstone", 3)
-core.override_item("default:stone", {
-    light_source = 1
-})
