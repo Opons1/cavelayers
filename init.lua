@@ -1,5 +1,14 @@
 cavelayers = {}
+
+--offsets where caves start spawning
+local y_offset = 0
+
+--registers the stones
 dofile(minetest.get_modpath("cavelayers") .. "./stones.lua")
+--registers the plants
+dofile(minetest.get_modpath("cavelayers") .. "./plants.lua")
+
+--contentids
 local c_sand = core.get_content_id("default:sand")
 local c_gravel = core.get_content_id("default:gravel")
 local c_dirt = core.get_content_id("default:dirt")
@@ -17,18 +26,145 @@ local c_deepstone = core.get_content_id("cavelayers:deepstone")
 local c_slab_mossycobble = core.get_content_id("stairs:slab_mossycobble")
 local c_slab_cobble = core.get_content_id("stairs:slab_cobble")
 local c_mossy_stone = core.get_content_id("cavelayers:mossy_stone")
-
+local c_sandstone = core.get_content_id("default:sandstone")
+local c_silver_sandstone = core.get_content_id("default:silver_sandstone")
+local c_mossy_gravel = core.get_content_id("cavelayers:mossy_gravel")
+local c_stone_pillar_1 = core.get_content_id("cavelayers:stone_pillar_1")
+local c_arcane_stone_pillar_1 = core.get_content_id("cavelayers:arcane_stone_pillar_1")
+local c_deepstone_pillar_1 = core.get_content_id("cavelayers:deepstone_pillar_1")
+local c_mossy_stone_pillar_1 = core.get_content_id("cavelayers:mossy_stone_pillar_1")
+local c_cobble_pillar_1 = core.get_content_id("cavelayers:cobble_pillar_1")
+local c_mossy_cobble_pillar_1 = core.get_content_id("cavelayers:mossy_cobble_pillar_1")
+--random number generator
 local seed = 99
-local PsuedoRandom = PseudoRandom(seed)
+local pr = PseudoRandom(seed)
+
+--stones for layer 1
 local stones = {c_stone, c_mossy_cobble, c_cobble, c_mossy_stone}
-local function randomstone()
-    return stones[PsuedoRandom:next(1, #stones)]
+local floorstones = {c_slab_mossycobble, c_slab_cobble, c_mossy_stone, c_mossy_cobble}
+--stalactites for layer 1
+local stalactites1 = {c_stone_pillar_1, c_mossy_stone_pillar_1, c_cobble_pillar_1, c_mossy_cobble_pillar_1,
+}
+
+
+
+--function to get a random node from a list of nodes
+local function randomstone(stones)
+    return stones[pr:next(1, #stones)]
 end
 
 local nodestoreplacewithstone = {
     [c_dirt] = true,
     [c_stone] = true,
     [c_silver_sand] = true,
+}
+
+local mossycavestones = {
+    [c_mossy_gravel] = true,
+    [c_mossy_stone] = true,
+    [c_cobble] = true,
+    [c_stone] = true,
+    [c_mossy_stone] = true,
+    [c_gravel] = true,
+}
+local maxy = 100
+
+local function findcavelayer(y)
+    local layer = math.floor((y + pr:next(-3, 3) + y_offset) / -200) + 1
+    return layer
+end
+--mossy cave replacement functions
+local mossycavesreplace = {
+    [c_gravel] = function(c_1up, c_1down)
+        local num = pr:next(1, 2)
+        if num == 2 then
+            return c_mossy_gravel
+        end
+    end,
+    [c_stone] = function(c_1up, c_1down)
+        if c_1up == c_air then
+            return randomstone(floorstones)
+        elseif c_1down == c_air then
+            local randomnum = pr:next(1, 10)
+            if randomnum == 1 then
+                return randomstone(stalactites1)
+            else
+                return randomstone(stones)
+            end
+        else
+            return randomstone(stones)
+        end
+    end,
+    [c_dirt] = function(c_1up, c_1down)
+        if c_1up == c_air then
+            return randomstone(floorstones)
+        else
+            return randomstone(stones)
+        end
+    end,
+    [c_silver_sand] = function(c_1up, c_1down)
+        if c_1up == c_air then
+            return randomstone(floorstones)
+        else
+            return randomstone(stones)
+        end
+    end,
+    [c_air] = function(c_1up, c_1down)
+        if mossycavestones[c_1up] then
+        end
+    end,
+    [c_sand] = function(c_1up, c_1down)
+        if c_1up == c_air then
+            return randomstone(floorstones)
+        else
+            if c_1up == c_water then
+                local num = pr:next(1, 2)
+                if num == 2 then
+                    return c_sandstone
+                end
+            else
+                return randomstone(stones)
+            end
+        end
+    end,
+}
+local function progress_stalactite(vi, data, vi1up, vi1down)
+    local node = data[vi]
+    local nodeabove = data[vi1up]
+    if node == c_air then
+        if cavelayers.pillars[nodeabove] and cavelayers.pillars[nodeabove][1] then
+            local num = pr:next(1, 2)
+            local nextnode = cavelayers.pillars[nodeabove][num]
+            local nextnode1
+            if data[vi1down] ~= c_air and data[vi1down] ~= c_water then
+                nextnode1 = cavelayers.pillars[nodeabove][-num]
+            end
+            if nextnode1 then
+                data[vi] = nextnode1
+            elseif nextnode then
+                data[vi] = nextnode
+            end
+        end
+    end
+end
+
+local layers = {
+    --mossy caves
+    [1] = function(data, area, x, y, z)
+        local vi = area:index(x, y, z)
+        local vi1up = area:index(x, y + 1, z)
+        local vi1down = area:index(x, y - 1, z)
+        local c_1up = data[vi1up]
+        local c_1down = data[vi1down]
+        data[vi] = mossycavesreplace[data[vi]] and mossycavesreplace[data[vi]](c_1up, c_1down) or data[vi]
+        if cavelayers.pillars[data[vi1up]] then
+            progress_stalactite(vi, data, vi1up, vi1down)
+        end
+    end,
+    --mossier caves
+    [2] = function(data, area, x, y, z)
+
+    end,
 }
 core.register_on_generated(function(minp, maxp, seed)
 
@@ -40,43 +176,15 @@ core.register_on_generated(function(minp, maxp, seed)
     })
 
     local data = vm:get_data()
-
+    if maxp.y > maxy or minp.y > maxy then
+        return
+    end
     for z = minp.z, maxp.z do
-        for y = minp.y, maxp.y do
+        for y = maxp.y, minp.y, -1 do
+            local layer = findcavelayer(y)
             for x = minp.x, maxp.x do
-                local vi = area:index(x, y, z)
-                local vi1up = area:index(x, y + 1, z)
-                local vi1down = area:index(x, y - 1, z)
-                if y <= 100 then
-                    if nodestoreplacewithstone[data[vi]] then
-                        if data[vi1up] == c_air then
-                            local randomnum = PsuedoRandom:next(1, 4)
-                            if randomnum == 1 then
-                                data[vi1up] = c_slab_mossycobble
-                            elseif randomnum == 2 then
-                                data[vi1up] = randomstone()
-                            elseif randomnum == 3 then
-                                data[vi1up] = c_slab_cobble
-                            elseif randomnum == 4 then
-                                data[vi1up] = c_mossy_cobble
-                            end
-                        elseif data[vi1down] == c_air then
-                            local chance = PsuedoRandom:next(1, 7)
-                            if chance == 1 then
-                                local length = PsuedoRandom:next(1, 5)
-                                data[vi] = randomstone()
-                                for i = 1, length do
-                                    local vidown = area:index(x, y - i, z)
-                                    if data[vidown] == c_air then
-                                        data[vidown] = randomstone()
-                                    end
-                                end
-                            else 
-                                data[vi] = c_air
-                            end
-                        end
-                        data[vi] = randomstone()
-                    end
+                if layers[layer] then
+                    layers[layer](data, area, x, y, z)
                 end
             end
         end
