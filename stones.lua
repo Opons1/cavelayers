@@ -157,3 +157,19 @@ register_pillar("deepstone_pillar", "Deepstone Pillar", "cavelayers:deepstone")
 register_pillar("mossy_stone_pillar", "Mossy Stone Pillar", "cavelayers:mossy_stone")
 register_pillar("cobble_pillar", "Cobblestone Pillar", "default:cobble")
 register_pillar("mossy_cobble_pillar", "Mossy Cobblestone Pillar", "default:mossycobble")
+
+
+
+
+
+
+
+
+--making cobblestone and mossy cobblestone ground content
+core.override_item("default:cobble", {
+    is_ground_content = true
+})
+
+core.override_item("default:mossycobble", {
+    is_ground_content = true
+})

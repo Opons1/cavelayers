@@ -9,9 +9,9 @@ core.set_mapgen_setting("mgv7_dungeon_ymax", "-31000", true)
 local y_offset = 0
 
 --registers the stones
-dofile(minetest.get_modpath("cavelayers") .. "./stones.lua")
+dofile(minetest.get_modpath("cavelayers") .. "/stones.lua")
 --registers the plants
-dofile(minetest.get_modpath("cavelayers") .. "./plants.lua")
+dofile(minetest.get_modpath("cavelayers") .. "/plants.lua")
 
 --contentids
 local c_sand = core.get_content_id("default:sand")
@@ -52,6 +52,7 @@ local c_heavy_moss = core.get_content_id("cavelayers:heavy_moss")
 local c_lava = core.get_content_id("default:lava_source")
 local c_lava_flowing = core.get_content_id("default:lava_flowing")
 local c_river_water = core.get_content_id("default:river_water_source")
+
 --random number generator
 local seed = 99
 local pr = PseudoRandom(seed)
@@ -236,8 +237,17 @@ local mossiercavesreplace = {
     [c_gravel] = function(c_1up, c_1down)
         return c_clay
     end,
-
-    
+    [c_sand] = function(c_1up, c_1down)
+        if mossycavesbasicallyair[c_1up] then
+            return randomstone(mossiercavesfloor)
+        elseif mossycavesbasicallyair[c_1down] then
+            return c_lush_moss
+        elseif c_1up == c_river_water then
+            return c_clay
+        else
+            return randomstone(stones)
+        end
+    end,
 }
 local layers = {
     --mossy caves
