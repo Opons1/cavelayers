@@ -1,4 +1,9 @@
 cavelayers = {}
+--liquids do not work with caves 
+core.set_mapgen_setting("mgv7_large_cave_flooded", "0", true)
+--dungeons bad for caves as well
+core.set_mapgen_setting("mgv7_dungeon_ymax", "-31000", true)
+
 
 --offsets where caves start spawning
 local y_offset = 0
@@ -285,13 +290,12 @@ core.register_on_generated(function(minp, maxp, seed)
     end
     for z = minp.z, maxp.z do
         for y = maxp.y, minp.y, -1 do
-            local layer = findcavelayer(y)
-            if y > 0 then
-                break
-            end
-            for x = minp.x, maxp.x do
-                if layers[layer] then
-                    layers[layer](data, area, x, y, z)
+            if y < 0 then
+                local layer = findcavelayer(y)
+                for x = minp.x, maxp.x do
+                    if layers[layer] then
+                        layers[layer](data, area, x, y, z)
+                    end
                 end
             end
         end
