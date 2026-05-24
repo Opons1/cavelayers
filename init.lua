@@ -44,6 +44,9 @@ local c_glowing_vine = core.get_content_id("cavelayers:glowing_vine")
 local c_water_flowing = core.get_content_id("default:water_flowing")
 local c_clay = core.get_content_id("default:clay")
 local c_heavy_moss = core.get_content_id("cavelayers:heavy_moss")
+local c_lava = core.get_content_id("default:lava_source")
+local c_lava_flowing = core.get_content_id("default:lava_flowing")
+local c_river_water = core.get_content_id("default:river_water_source")
 --random number generator
 local seed = 99
 local pr = PseudoRandom(seed)
@@ -133,6 +136,12 @@ local mossycavesreplace = {
             end
         end
     end,
+    [c_lava] = function(c_1up, c_1down)
+        return c_air
+    end,
+    [c_lava_flowing] = function(c_1up, c_1down)
+        return c_air
+    end,
 }
 local function progress_stalactite(vi, data, vi1up, vi1down)
     local node = data[vi]
@@ -163,8 +172,10 @@ local mossycavesbasicallyair = {
     [c_air] = true,
     [c_water] = true,
     [c_water_flowing] = true,
+    [c_lava] = true,
+    [c_lava_flowing] = true,
 }
-local mossiercavesfloor = {c_heavy_moss}
+local mossiercavesfloor = {c_heavy_moss, c_lush_moss}
 local mossiercavesreplaceair = function(c_1up, c_1down)
     if c_1up == c_lush_moss and c_1down == c_air then
         local num = pr:next(1, 21)
@@ -193,7 +204,9 @@ local mossiercavesreplace = {
             return randomstone(mossiercavesfloor)
         elseif mossycavesbasicallyair[c_1down] then
             return c_lush_moss
-        else 
+        elseif c_1up == c_river_water then
+            return c_clay
+        else
             return randomstone(stones)
         end
     end,
@@ -206,12 +219,19 @@ local mossiercavesreplace = {
     [c_water_flowing] = function(c_1up, c_1down)
         return mossiercavesreplaceair(c_1up, c_1down)
     end,
+    [c_lava] = function(c_1up, c_1down)
+        return mossiercavesreplaceair(c_1up, c_1down)
+    end,
+    [c_lava_flowing] = function(c_1up, c_1down)
+        return mossiercavesreplaceair(c_1up, c_1down)
+    end,
     [c_silver_sand] = function(c_1up, c_1down)
         return c_clay
     end,
     [c_gravel] = function(c_1up, c_1down)
         return c_clay
     end,
+
     
 }
 local layers = {
@@ -235,6 +255,19 @@ local layers = {
         local c_1up = data[vi1up]
         local c_1down = data[vi1down]
         data[vi] = mossiercavesreplace[data[vi]] and mossiercavesreplace[data[vi]](c_1up, c_1down) or data[vi]
+        if c_1down == c_stone and c_1up == c_air then
+            local vi1 = area:index(x+1, y, z)
+            local vi2 = area:index(x-1, y, z)
+            local vi3 = area:index(x, y, z+1)
+            local vi4 = area:index(x, y, z-1)
+            local c_1up = data[vi1]
+            local c_2up = data[vi2]
+            local c_3up = data[vi3]
+            local c_4up = data[vi4]
+            if not mossycavesbasicallyair[c_1up] and not mossycavesbasicallyair[c_2up] and not mossycavesbasicallyair[c_3up] and not mossycavesbasicallyair[c_4up] then
+            data[vi] = c_river_water
+            end 
+        end
     end,
 }
 core.register_on_generated(function(minp, maxp, seed)
@@ -264,6 +297,7 @@ core.register_on_generated(function(minp, maxp, seed)
         end
     end
     vm:set_data(data)
+    vm:update_liquids()
     vm:calc_lighting()
     vm:write_to_map()
 end)
