@@ -13,6 +13,11 @@ dofile(minetest.get_modpath("cavelayers") .. "/stones.lua")
 --registers the plants
 dofile(minetest.get_modpath("cavelayers") .. "/plants.lua")
 
+--perlin noise
+--this one is for an endless open cave
+
+
+
 --contentids
 local c_sand = core.get_content_id("default:sand")
 local c_gravel = core.get_content_id("default:gravel")
@@ -52,7 +57,13 @@ local c_heavy_moss = core.get_content_id("cavelayers:heavy_moss")
 local c_lava = core.get_content_id("default:lava_source")
 local c_lava_flowing = core.get_content_id("default:lava_flowing")
 local c_river_water = core.get_content_id("default:river_water_source")
-
+--layer 3, ungle/swamp
+local c_jungle_moss = core.get_content_id("cavelayers:jungle_moss")
+local c_jungle_moss_carpet = core.get_content_id("cavelayers:jungle_moss_carpet")
+local c_jungle_vine = core.get_content_id("cavelayers:jungle_vine")
+local c_swampy_moss = core.get_content_id("cavelayers:swampy_moss")
+local c_swampy_moss_carpet = core.get_content_id("cavelayers:swampy_moss_carpet")
+local c_heavy_moss_carpet = core.get_content_id("cavelayers:heavy_moss_carpet")
 --random number generator
 local seed = 99
 local pr = PseudoRandom(seed)
@@ -249,6 +260,55 @@ local mossiercavesreplace = {
         end
     end,
 }
+--swampy caves glue
+local swampyairupactions = {
+    [c_jungle_moss] = function()
+        local num = pr:next(1, 2)
+        if num == 2 then
+            return c_jungle_vine
+        else
+            return c_air
+        end
+    end,
+    [c_jungle_vine] = function()
+        local num = pr:next(1, 2)
+        if num == 2 then
+            return c_jungle_vine
+        else
+            return c_air
+        end
+    end,
+}
+
+local swampcavesreplace = {
+    [c_stone] = function(c_1up, c_1down)
+        if mossycavesbasicallyair[c_1up] then
+            return c_jungle_moss
+        elseif mossycavesbasicallyair[c_1down] then
+            return c_jungle_moss
+        elseif c_1up == c_swampy_moss or c_heavy_moss_carpet then
+            local num = pr:next(1, 2)
+            if num == 2 then
+                return c_swampy_moss
+            else
+                return c_heavy_moss
+            end
+        else
+            return randomstone(stones)
+        end
+    end,
+    [c_air] = function(c_1up, c_1down)
+        if nodestoreplacewithstone[c_1down] then
+            local num = pr:next(1, 2)
+            if num == 2 then
+                return c_heavy_moss_carpet
+            else
+                return c_swampy_moss_carpet
+            end
+        end
+        return swampyairupactions[c_1up] and swampyairupactions[c_1up]() or c_air
+    end,
+}
 local layers = {
     --mossy caves
     [1] = function(data, area, x, y, z)
@@ -283,6 +343,15 @@ local layers = {
             data[vi] = c_river_water
             end 
         end
+    end,
+    [3] = function(data, area, x, y, z)
+        --jungle caves
+        local vi = area:index(x, y, z)
+        local vi1up = area:index(x, y + 1, z)
+        local vi1down = area:index(x, y - 1, z)
+        local c_1up = data[vi1up]
+        local c_1down = data[vi1down]
+        data[vi] = swampcavesreplace[data[vi]] and swampcavesreplace[data[vi]](c_1up, c_1down) or data[vi]
     end,
 }
 core.register_on_generated(function(minp, maxp, seed)

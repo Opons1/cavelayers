@@ -107,7 +107,7 @@ local function register_pillar(name, desc, nodename)
         error("Node " .. nodename .. " not found for pillar " .. name)
     end
     local groups = nodedata.groups
-    local drop = nodedata.drop
+    local drop = nodedata.drop or nodename
     local sounds = nodedata.sounds
     local tiles = nodedata.tiles
     for i = 1, 8 do

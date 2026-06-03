@@ -72,6 +72,7 @@ core.register_abm({
 register_moss("jungle_moss", "Jungle Moss", {"cavelayersjunglemoss.png"})
 register_moss("lush_moss", "Lush Moss", {"cavelayerslushmoss.png"})
 register_moss("heavy_moss", "Heavy Moss", {"default_moss.png"})
+register_moss("swampy_moss", "Swampy Moss", {"cavelayersswampymoss.png"})
 register_vine("lush_vine", "Lush Vine", {"cavelayerslushvine.png"}, {selection_box = {
     type = "fixed",
     fixed = {
@@ -80,3 +81,4 @@ register_vine("lush_vine", "Lush Vine", {"cavelayerslushvine.png"}, {selection_b
 }})
 register_vine("lush_vine_large", "Lush Vine Large", {"cavelayerslushvinelarge.png"})
 register_vine("glowing_vine", "Glowing Vine", {"cavelayersglowingvine.png"}, {light_source = 12})
+register_vine("jungle_vine", "Jungle Vine", {"cavelayersjunglevine.png"})
