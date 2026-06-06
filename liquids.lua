@@ -1,7 +1,7 @@
 minetest.register_node("cavelayers:swamp_water_source", {
 	description = "Swamp Water Source",
 	drawtype = "liquid",
-	waving = 3,
+	waving = 1,
 	tiles = {
 		{
 			name = "default_water_source_animated.png^[colorize:#2a5a0f:210", -- Heavy algae green overlay
@@ -45,7 +45,7 @@ minetest.register_node("cavelayers:swamp_water_source", {
 minetest.register_node("cavelayers:swamp_water_flowing", {
 	description = "Flowing Swamp Water",
 	drawtype = "flowingliquid",
-	waving = 3,
+	waving = 1,
 	tiles = {"default_water.png^[colorize:#2a5a0f:210"},
 	special_tiles = {
 		{

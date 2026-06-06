@@ -73,6 +73,7 @@ local c_swampy_moss_carpet = core.get_content_id("cavelayers:swampy_moss_carpet"
 local c_heavy_moss_carpet = core.get_content_id("cavelayers:heavy_moss_carpet")
 local c_swamp_ore = core.get_content_id("cavelayers:stone_with_swamp_mineral")
 local c_swamp_water = core.get_content_id("cavelayers:swamp_water_source")
+local c_swamp_grass = core.get_content_id("cavelayers:swamp_grass")
 --random number generator
 local seed = 99
 local pr = PseudoRandom(seed)
@@ -367,11 +368,14 @@ local layers = {
             local c_2 = data[vi2]
             local c_3 = data[vi3]
             local c_4 = data[vi4]
-            if (c_1 ~= c_air and c_1 ~= c_ignore) and
-                (c_2 ~= c_air and c_2 ~= c_ignore) and
-                (c_3 ~= c_air and c_3 ~= c_ignore) and
-                (c_4 ~= c_air and c_4 ~= c_ignore) then
-                possibleswampwater = true
+            if (c_1 ~= c_air and c_1 ~= c_ignore and c_1 ~= c_swamp_grass) and
+                (c_2 ~= c_air and c_2 ~= c_ignore and c_1 ~= c_swamp_grass) and
+                (c_3 ~= c_air and c_3 ~= c_ignore and c_1 ~= c_swamp_grass) and
+                (c_4 ~= c_air and c_4 ~= c_ignore and c_1 ~= c_swamp_grass) then
+                local num = pr:next(1, 3)
+                if num ~= 3 then
+                    possibleswampwater = true
+                end
             end
 
         end
@@ -379,8 +383,11 @@ local layers = {
             data[vi] = c_swamp_water
         else
             data[vi] = swampcavesreplace[data[vi]] and swampcavesreplace[data[vi]](c_1up, c_1down) or data[vi]
-            if data[vi] == c_swampy_moss or data[vi] == c_jungle_moss then
-                
+            if (data[vi] == c_swampy_moss or data[vi] == c_jungle_moss) and data[vi1up] == c_air then
+                local randomnum = pr:next(1, 2)
+                if randomnum == 2 then
+                    data[vi1up] = c_swamp_grass
+                end
             end
         end
     end,
