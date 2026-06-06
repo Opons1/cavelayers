@@ -56,6 +56,23 @@ local function register_vine(name, desc, tiles, data)
         light_source = data.light_source,
     })
 end
+local function register_grass(name, desc, tiles)
+    core.register_node("cavelayers:"..name, {
+        description = desc,
+        drawtype = "plantlike",
+        paramtype = "light",
+        groups = {snappy = 3, flora = 1},
+        sounds = default.node_sound_leaves_defaults(),
+        tiles = tiles,
+        walkable = false,
+        selection_box = {
+            type = "fixed",
+            fixed = {
+                {-0.5, -0.5, -0.5, 0.5, 0.25, 0.5}
+            }
+        },
+    })
+end
 core.register_abm({
     label = "Cavelayer Vine Growth",
     nodenames = {"group:vines"},
@@ -82,3 +99,4 @@ register_vine("lush_vine", "Lush Vine", {"cavelayerslushvine.png"}, {selection_b
 register_vine("lush_vine_large", "Lush Vine Large", {"cavelayerslushvinelarge.png"})
 register_vine("glowing_vine", "Glowing Vine", {"cavelayersglowingvine.png"}, {light_source = 12})
 register_vine("jungle_vine", "Jungle Vine", {"cavelayersjunglevine.png"})
+register_vine("vine", "Vine", {"cavelayersvine.png"})
