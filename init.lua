@@ -315,6 +315,48 @@ local swampcavesreplace = {
     [c_air] = function(c_1up, c_1down)
         return swampyairupactions[c_1up] and swampyairupactions[c_1up]() or c_air
     end,
+    [c_silver_sand] = function(c_1up, c_1down)
+        if mossycavesbasicallyair[c_1up] then
+            local randomnum = pr:next(1, 400)
+            if randomnum == 400 then 
+                return c_swamp_ore
+            else
+                return c_jungle_moss
+            end
+        elseif mossycavesbasicallyair[c_1down] then
+            return c_jungle_moss
+        elseif c_1up == c_swampy_moss or c_heavy_moss_carpet then
+            local num = pr:next(1, 2)
+            if num == 2 then
+                return c_swampy_moss
+            else
+                return c_heavy_moss
+            end
+        else
+            return randomstone(stones)
+        end
+    end,
+    [c_gravel] = function(c_1up, c_1down)
+        if mossycavesbasicallyair[c_1up] then
+            local randomnum = pr:next(1, 400)
+            if randomnum == 400 then 
+                return c_swamp_ore
+            else
+                return c_jungle_moss
+            end
+        elseif mossycavesbasicallyair[c_1down] then
+            return c_jungle_moss
+        elseif c_1up == c_swampy_moss or c_heavy_moss_carpet then
+            local num = pr:next(1, 2)
+            if num == 2 then
+                return c_swampy_moss
+            else
+                return c_heavy_moss
+            end
+        else
+            return randomstone(stones)
+        end
+    end,
 }
 local layers = {
     --mossy caves
